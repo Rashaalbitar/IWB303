@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Statistics"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:background="#EEEEEE"
+        android:layout_marginBottom="16dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#AAAAAA"
+        android:layout_marginBottom="8dp"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Expenses:"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
+        <TextView
+            android:id="@+id/tvStatTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="0 SYP"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="#2196F3"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#AAAAAA"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="By Category:"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp"/>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+
+        <TableRow android:padding="4dp">
+            <TextView android:text="Food:" android:textSize="16sp"/>
+            <TextView android:id="@+id/tvStatFood" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
+        </TableRow>
+
+        <TableRow android:padding="4dp">
+            <TextView android:text="Cleaning Supplies:" android:textSize="16sp"/>
+            <TextView android:id="@+id/tvStatCleaning" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
+        </TableRow>
+
+        <TableRow android:padding="4dp">
+            <TextView android:text="Personal Care:" android:textSize="16sp"/>
+            <TextView android:id="@+id/tvStatPersonal" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
+        </TableRow>
+
+        <TableRow android:padding="4dp">
+            <TextView android:text="Baby Supplies:" android:textSize="16sp"/>
+            <TextView android:id="@+id/tvStatBaby" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
+        </TableRow>
+    </TableLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#AAAAAA"
+        android:layout_marginTop="16dp"/>
+
+    <com.github.mikephil.charting.charts.PieChart
+        android:id="@+id/pieChart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Back to Home" />
+
+</LinearLayout>

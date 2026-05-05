@@ -1,0 +1,42 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.IWB303" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- الألوان الأساسية للنمط الفاتح -->
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_dark_light</item>
+        <item name="colorSecondary">@color/accent_light</item>
+
+        <!-- ربط ألوان الدايلوج بالثيم -->
+        <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogTheme</item>
+
+        <!-- ألوان الحالة والخلفية -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+
+    <style name="Theme.IWB303" parent="Base.Theme.IWB303" />
+
+    <!-- نمط إضافي (Green/Accent Theme) -->
+    <style name="Theme.IWB303.Accent" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_accent</item>
+        <item name="colorPrimaryVariant">@color/primary_dark_accent</item>
+        <item name="colorSecondary">@color/accent_accent</item>
+
+        <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogTheme</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+
+    <!-- ستايل نافذة التاريخ - تم تعديله ليشمل كل التفاصيل -->
+    <style name="CustomDatePickerDialogTheme" parent="Theme.Material3.DayNight.Dialog">
+        <!-- لون الرأس والأزرار والدوائر المختارة -->
+        <item name="colorPrimary">?attr/colorPrimary</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
+        <item name="android:headerBackground">?attr/colorPrimary</item>
+        <item name="android:numbersTextColor">?attr/colorPrimary</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
+    </style>
+
+    <style name="DatePickerButtonStyle" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+</resources>

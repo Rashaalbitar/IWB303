@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Light Theme Colors -->
+    <color name="primary_light">#2196F3</color>
+    <color name="primary_dark_light">#1976D2</color>
+    <color name="accent_light">#FF4081</color>
+
+    <!-- Accent Theme Colors (الألوان السابقة) -->
+    <color name="primary_accent">#4CAF50</color>
+    <color name="primary_dark_accent">#388E3C</color>
+    <color name="accent_accent">#FFC107</color>
+
+    <!-- Dark Theme Colors -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_card">#1E1E1E</color>
+</resources>
