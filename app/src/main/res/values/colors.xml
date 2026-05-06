@@ -3,17 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Light Theme Colors -->
-    <color name="primary_light">#2196F3</color>
-    <color name="primary_dark_light">#1976D2</color>
-    <color name="accent_light">#FF4081</color>
+    <!-- Light Theme Colors (Modern Material Blue) -->
+    <color name="primary_light">#0061A4</color>
+    <color name="primary_container_light">#D1E4FF</color>
+    <color name="on_primary_container_light">#001D36</color>
+    <color name="secondary_light">#535F70</color>
+    <color name="surface_light">#F8FDFF</color>
 
-    <!-- Accent Theme Colors (الألوان السابقة) -->
-    <color name="primary_accent">#4CAF50</color>
-    <color name="primary_dark_accent">#388E3C</color>
-    <color name="accent_accent">#FFC107</color>
+    <!-- Accent Theme Colors (Modern Nature Green) -->
+    <color name="primary_accent">#006D39</color>
+    <color name="primary_container_accent">#97F7B4</color>
+    <color name="on_primary_container_accent">#00210C</color>
+    <color name="secondary_accent">#4F6354</color>
 
-    <!-- Dark Theme Colors -->
-    <color name="dark_background">#121212</color>
-    <color name="dark_card">#1E1E1E</color>
+    <!-- Dark Theme Colors (Deep Slate) -->
+    <color name="dark_background">#1A1C1E</color>
+    <color name="dark_surface">#1A1C1E</color>
+    <color name="dark_on_surface">#E2E2E6</color>
+    <color name="primary_dark">#9ECAFF</color>
 </resources>

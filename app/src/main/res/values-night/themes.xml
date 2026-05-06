@@ -2,12 +2,11 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.IWB303" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- الألوان الأساسية للنمط الداكن -->
-        <item name="colorPrimary">@color/primary_light</item>
-        <item name="colorPrimaryVariant">@color/primary_dark_light</item>
-        <item name="colorSecondary">@color/accent_light</item>
+        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary_light</item>
 
         <!-- ألوان الخلفية في النمط الداكن -->
         <item name="android:windowBackground">@color/dark_background</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">@color/black</item>
     </style>
 </resources>

@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_THEME = "selected_theme";
     
     private RecyclerView recyclerView;
+    private View layoutEmptyState;
     private PurchaseAdapter adapter;
     private DatabaseHelper dbHelper;
 
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
         recyclerView = findViewById(R.id.recyclerViewPurchases);
+        layoutEmptyState = findViewById(R.id.layoutEmptyState);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         loadData();
@@ -196,6 +198,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadData() {
         List<Purchase> list = dbHelper.getAllPurchases();
+        
+        if (list.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            layoutEmptyState.setVisibility(View.GONE);
+        }
+
         if (adapter == null) {
             adapter = new PurchaseAdapter(list, (purchase, view) -> {
                 showActionMenu(purchase, view);

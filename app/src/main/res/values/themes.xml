@@ -3,14 +3,15 @@
     <style name="Base.Theme.IWB303" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- الألوان الأساسية للنمط الفاتح -->
         <item name="colorPrimary">@color/primary_light</item>
-        <item name="colorPrimaryVariant">@color/primary_dark_light</item>
-        <item name="colorSecondary">@color/accent_light</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="colorPrimaryContainer">@color/primary_container_light</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container_light</item>
 
         <!-- ربط ألوان الدايلوج بالثيم -->
         <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogTheme</item>
 
         <!-- ألوان الحالة والخلفية -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
     </style>
 
     <style name="Theme.IWB303" parent="Base.Theme.IWB303" />
@@ -18,11 +19,12 @@
     <!-- نمط إضافي (Green/Accent Theme) -->
     <style name="Theme.IWB303.Accent" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary_accent</item>
-        <item name="colorPrimaryVariant">@color/primary_dark_accent</item>
-        <item name="colorSecondary">@color/accent_accent</item>
+        <item name="colorSecondary">@color/secondary_accent</item>
+        <item name="colorPrimaryContainer">@color/primary_container_accent</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container_accent</item>
 
         <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogTheme</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
     </style>
 
     <!-- ستايل نافذة التاريخ - تم تعديله ليشمل كل التفاصيل -->

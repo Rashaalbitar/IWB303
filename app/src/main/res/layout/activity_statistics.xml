@@ -1,107 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="?attr/colorSurface">
 
-    <TextView
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Statistics"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:background="#EEEEEE"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Statistics"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </com.google.android.material.appbar.MaterialToolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <View
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#AAAAAA"
-        android:layout_marginBottom="8dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp">
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total Expenses:"
-            android:textStyle="bold"
-            android:textSize="18sp"/>
-        <TextView
-            android:id="@+id/tvStatTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="0 SYP"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="#2196F3"/>
-    </RelativeLayout>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#AAAAAA"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"/>
+            <!-- Total Expenses Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                android:layout_marginBottom="16dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="By Category:"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:gravity="center">
 
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stretchColumns="1">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Expenses"
+                        android:textSize="16sp"
+                        android:textColor="?attr/colorOnPrimaryContainer" />
 
-        <TableRow android:padding="4dp">
-            <TextView android:text="Food:" android:textSize="16sp"/>
-            <TextView android:id="@+id/tvStatFood" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
-        </TableRow>
+                    <TextView
+                        android:id="@+id/tvStatTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.00 SYP"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-        <TableRow android:padding="4dp">
-            <TextView android:text="Cleaning Supplies:" android:textSize="16sp"/>
-            <TextView android:id="@+id/tvStatCleaning" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
-        </TableRow>
+            <!-- Chart Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                android:layout_marginBottom="16dp">
 
-        <TableRow android:padding="4dp">
-            <TextView android:text="Personal Care:" android:textSize="16sp"/>
-            <TextView android:id="@+id/tvStatPersonal" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
-        </TableRow>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
-        <TableRow android:padding="4dp">
-            <TextView android:text="Baby Supplies:" android:textSize="16sp"/>
-            <TextView android:id="@+id/tvStatBaby" android:gravity="end" android:text="0 SYP" android:textSize="16sp"/>
-        </TableRow>
-    </TableLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Expenses Distribution"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#AAAAAA"
-        android:layout_marginTop="16dp"/>
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/pieChart"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp" />
+            <!-- Breakdown Table Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                android:layout_marginBottom="16dp">
 
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Back to Home" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Category Breakdown"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp"/>
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:stretchColumns="1">
+
+                        <TableRow android:paddingVertical="8dp">
+                            <TextView android:text="🍔 Food" android:textSize="15sp"/>
+                            <TextView android:id="@+id/tvStatFood" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
+                        </TableRow>
+                        <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
+
+                        <TableRow android:paddingVertical="8dp">
+                            <TextView android:text="🧼 Cleaning Supplies" android:textSize="15sp"/>
+                            <TextView android:id="@+id/tvStatCleaning" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
+                        </TableRow>
+                        <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
+
+                        <TableRow android:paddingVertical="8dp">
+                            <TextView android:text="🧴 Personal Care" android:textSize="15sp"/>
+                            <TextView android:id="@+id/tvStatPersonal" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
+                        </TableRow>
+                        <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
+
+                        <TableRow android:paddingVertical="8dp">
+                            <TextView android:text="👶 Baby Supplies" android:textSize="15sp"/>
+                            <TextView android:id="@+id/tvStatBaby" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
+                        </TableRow>
+                    </TableLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Button
+                android:id="@+id/btnBack"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Back to Home"
+                android:layout_marginBottom="16dp"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
