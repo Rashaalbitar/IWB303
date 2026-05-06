@@ -13,9 +13,15 @@ import java.util.List;
 public class PurchaseAdapter extends RecyclerView.Adapter<PurchaseAdapter.PurchaseViewHolder> {
 
     private List<Purchase> purchaseList;
+    private OnItemMenuClickListener menuClickListener;
 
-    public PurchaseAdapter(List<Purchase> purchaseList) {
+    public interface OnItemMenuClickListener {
+        void onItemMenuClick(Purchase purchase, View view);
+    }
+
+    public PurchaseAdapter(List<Purchase> purchaseList, OnItemMenuClickListener menuClickListener) {
         this.purchaseList = purchaseList;
+        this.menuClickListener = menuClickListener;
     }
 
     @NonNull
@@ -33,6 +39,12 @@ public class PurchaseAdapter extends RecyclerView.Adapter<PurchaseAdapter.Purcha
             holder.tvTotal.setText(String.format(java.util.Locale.US, "%.2f", purchase.getTotalCost()));
             holder.tvCategory.setText(purchase.getCategoryName() != null ? purchase.getCategoryName() : "-");
             holder.tvItemName.setText(purchase.getItemName() != null ? purchase.getItemName() : "");
+
+            holder.btnMenu.setOnClickListener(v -> {
+                if (menuClickListener != null) {
+                    menuClickListener.onItemMenuClick(purchase, v);
+                }
+            });
         }
     }
 
@@ -48,6 +60,7 @@ public class PurchaseAdapter extends RecyclerView.Adapter<PurchaseAdapter.Purcha
 
     static class PurchaseViewHolder extends RecyclerView.ViewHolder {
         TextView tvDate, tvTotal, tvCategory, tvItemName;
+        android.widget.ImageButton btnMenu;
 
         public PurchaseViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -55,6 +68,7 @@ public class PurchaseAdapter extends RecyclerView.Adapter<PurchaseAdapter.Purcha
             tvTotal = itemView.findViewById(R.id.tvTotalCost);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             tvItemName = itemView.findViewById(R.id.tvItemName);
+            btnMenu = itemView.findViewById(R.id.btnItemMenu);
         }
     }
 }

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.ViewCompat;
@@ -19,9 +20,14 @@ import androidx.core.graphics.Insets;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -134,38 +140,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void showDatePicker() {
         if (dbHelper == null) dbHelper = new DatabaseHelper(this);
-        
-        final Calendar c = Calendar.getInstance();
-        int y = c.get(Calendar.YEAR);
-        int m = c.get(Calendar.MONTH);
-        int d = c.get(Calendar.DAY_OF_MONTH);
 
-        try {
-            DatePickerDialog dialog = new DatePickerDialog(this, (view, year, month, day) -> {
-                try {
-                    // استخدام Locale.US لضمان توافق الأرقام (0-9)
-                    String selectedDate = String.format(Locale.US, "%02d/%02d/%d", day, month + 1, year);
-                    
-                    List<Purchase> filteredList = dbHelper.getPurchasesByDate(selectedDate);
-                    
-                    if (adapter != null) {
-                        adapter.updateData(filteredList);
-                        if (filteredList.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "لا توجد مشتريات لهذا التاريخ: " + selectedDate, Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        // في حال كان المحول فارغاً، نقوم بتحميل البيانات من جديد
-                        loadData();
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select Date")
+                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .build();
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            try {
+                Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                calendar.setTimeInMillis(selection);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+                String selectedDate = sdf.format(calendar.getTime());
+
+                List<Purchase> filteredList = dbHelper.getPurchasesByDate(selectedDate);
+                if (adapter != null) {
+                    adapter.updateData(filteredList);
+                    if (filteredList.isEmpty()) {
+                        Toast.makeText(MainActivity.this, "No purchases found for: " + selectedDate, Toast.LENGTH_SHORT).show();
                     }
-                } catch (Exception e) {
-                    android.util.Log.e("MainActivity", "Filter error", e);
-                    Toast.makeText(MainActivity.this, "خطأ أثناء الفلترة: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                } else {
+                    loadData();
                 }
-            }, y, m, d);
-            dialog.show();
-        } catch (Exception e) {
-            Toast.makeText(this, "تعذر فتح نافذة التاريخ", Toast.LENGTH_SHORT).show();
-        }
+            } catch (Exception e) {
+                android.util.Log.e("MainActivity", "Filter error", e);
+                Toast.makeText(MainActivity.this, "Error during filtering: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        datePicker.show(getSupportFragmentManager(), "FILTER_DATE_PICKER");
     }
 
     private void showThemeMenu(View v) {
@@ -194,11 +197,49 @@ public class MainActivity extends AppCompatActivity {
     private void loadData() {
         List<Purchase> list = dbHelper.getAllPurchases();
         if (adapter == null) {
-            adapter = new PurchaseAdapter(list);
+            adapter = new PurchaseAdapter(list, (purchase, view) -> {
+                showActionMenu(purchase, view);
+            });
             recyclerView.setAdapter(adapter);
         } else {
             adapter.updateData(list);
         }
+    }
+
+    private void showActionMenu(Purchase purchase, View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.getMenu().add(0, 1, 0, "Edit Purchase");
+        popup.getMenu().add(0, 2, 1, "Delete Purchase");
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) {
+                // تعديل
+                Intent intent = new Intent(MainActivity.this, AddPurchaseActivity.class);
+                intent.putExtra("PURCHASE_ID", purchase.getId());
+                intent.putExtra("ITEM_NAME", purchase.getItemName());
+                intent.putExtra("CATEGORY_NAME", purchase.getCategoryName());
+                intent.putExtra("PRICE", purchase.getPrice());
+                intent.putExtra("QUANTITY", purchase.getQuantity());
+                intent.putExtra("DATE", purchase.getDate());
+                startActivity(intent);
+                return true;
+            } else if (item.getItemId() == 2) {
+                // حذف - مع رسالة تأكيد
+                new AlertDialog.Builder(this)
+                        .setTitle("Confirm Delete")
+                        .setMessage("Are you sure you want to delete this purchase?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            dbHelper.deletePurchase(purchase.getId());
+                            loadData();
+                            Toast.makeText(this, "Purchase deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+                return true;
+            }
+            return false;
+        });
+        popup.show();
     }
 
     @Override

@@ -23,11 +23,11 @@
 
         <activity
             android:name=".AddPurchaseActivity"
-            android:label="إضافة مشتريات" />
+            android:label="إضافة طلب شراء" />
 
         <activity
             android:name=".StatisticsActivity"
-            android:label="الإحصائيات" />
+            android:label="Statistics" />
 
     </application>
 

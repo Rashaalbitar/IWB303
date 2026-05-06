@@ -3,26 +3,36 @@ package com.example.iwb303;
 import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.text.InputType;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class AddPurchaseActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "theme_prefs";
     private static final String KEY_THEME = "selected_theme";
 
-    private TextInputEditText etItemName, etCategory, etPrice, etQuantity, etDate;
+    private TextInputEditText etPrice, etQuantity, etDate;
+    private AutoCompleteTextView etCategory, etItemName;
     private Button btnSave;
     private ImageButton btnClose;
     private DatabaseHelper dbHelper;
+    private int purchaseId = -1; // -1 تعني إضافة طلب جديد، أي قيمة أخرى تعني تعديل
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +58,33 @@ public class AddPurchaseActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         btnClose = findViewById(R.id.btnClose);
 
-        // برمجة حقل التاريخ ليظهر نافذة اختيار التاريخ
+        // إعداد قائمة الفئات المنسدلة
+        setupCategoryDropdown();
+
+        // تحقق مما إذا كنا في وضع التعديل
+        if (getIntent().hasExtra("PURCHASE_ID")) {
+            purchaseId = getIntent().getIntExtra("PURCHASE_ID", -1);
+            etItemName.setText(getIntent().getStringExtra("ITEM_NAME"));
+            etCategory.setText(getIntent().getStringExtra("CATEGORY_NAME"), false);
+            etPrice.setText(String.valueOf(getIntent().getDoubleExtra("PRICE", 0)));
+            etQuantity.setText(String.valueOf(getIntent().getIntExtra("QUANTITY", 0)));
+            etDate.setText(getIntent().getStringExtra("DATE"));
+            
+            btnSave.setText("Update Purchase");
+            etItemName.setEnabled(true); // تفعيل حقل المادة عند التعديل
+        }
+
+        // إعداد قائمة المواد بناءً على الفئة المختارة
+        etCategory.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedCategory = (String) parent.getItemAtPosition(position);
+            updateItemDropdown(selectedCategory);
+        });
+
+        // برمجة حقل التاريخ ليظهر تقويم MaterialDatePicker
+        etDate.setInputType(InputType.TYPE_NULL);
         etDate.setFocusable(false);
         etDate.setClickable(true);
-        etDate.setOnClickListener(v -> showDatePickerDialog());
+        etDate.setOnClickListener(v -> showMaterialDatePicker());
 
         // برمجة زر الإغلاق للعودة للصفحة الرئيسية
         btnClose.setOnClickListener(v -> finish());
@@ -64,7 +97,7 @@ public class AddPurchaseActivity extends AppCompatActivity {
             String date = etDate.getText().toString().trim();
 
             if (name.isEmpty() || categoryName.isEmpty() || priceStr.isEmpty() || quantityStr.isEmpty() || date.isEmpty()) {
-                Toast.makeText(this, "يرجى ملء جميع الحقول", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -75,33 +108,67 @@ public class AddPurchaseActivity extends AppCompatActivity {
                 int categoryId = dbHelper.getOrCreateCategoryId(categoryName);
                 Purchase purchase = new Purchase(name, categoryId, price, quantity, date);
 
-                long id = dbHelper.addPurchase(purchase);
-                if (id > 0) {
-                    Toast.makeText(this, "تم الحفظ بنجاح", Toast.LENGTH_SHORT).show();
-                    finish();
+                if (purchaseId == -1) {
+                    // إضافة جديد
+                    long id = dbHelper.addPurchase(purchase);
+                    if (id > 0) {
+                        Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
                 } else {
-                    Toast.makeText(this, "فشل في الحفظ", Toast.LENGTH_SHORT).show();
+                    // تحديث موجود
+                    // نحتاج لاستخدام constructor الـ ID للتعديل
+                    Purchase updatedPurchase = new Purchase(purchaseId, name, categoryId, categoryName, price, quantity, price * quantity, date);
+                    int rows = dbHelper.updatePurchase(updatedPurchase);
+                    if (rows > 0) {
+                        Toast.makeText(this, "Updated successfully", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
                 }
             } catch (NumberFormatException e) {
-                Toast.makeText(this, "يرجى إدخال قيم صحيحة للسعر والكمية", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please enter valid price and quantity", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void showDatePickerDialog() {
-        final Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+    private void updateItemDropdown(String categoryName) {
+        List<String> items = dbHelper.getItemsByCategory(categoryName);
+        if (items.isEmpty()) {
+            etItemName.setText("");
+            etItemName.setAdapter(null);
+            etItemName.setEnabled(false);
+            Toast.makeText(this, "No items found for: " + categoryName, Toast.LENGTH_SHORT).show();
+        } else {
+            etItemName.setEnabled(true);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_dropdown_item_1line, items);
+            etItemName.setAdapter(adapter);
+            // مسح النص القديم مع تعطيل الفلترة لضمان ظهور كل القائمة عند الضغط
+            etItemName.setText("", false);
+        }
+    }
 
-        // استخدام الثيم المحدد في الـ Manifest أو المطبق برمجياً
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // استخدام Locale.US لضمان حفظ التاريخ بتنسيق أرقام موحد
-                    String formattedDate = String.format(Locale.US, "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
-                    etDate.setText(formattedDate);
-                }, year, month, day);
+    private void setupCategoryDropdown() {
+        List<String> categories = dbHelper.getAllCategoryNames();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, categories);
+        etCategory.setAdapter(adapter);
+    }
 
-        datePickerDialog.show();
+    private void showMaterialDatePicker() {
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select Purchase Date")
+                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .build();
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            // تحويل التاريخ المختار إلى تنسيق DD/MM/YYYY
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            calendar.setTimeInMillis(selection);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+            etDate.setText(sdf.format(calendar.getTime()));
+        });
+
+        datePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
     }
 }
