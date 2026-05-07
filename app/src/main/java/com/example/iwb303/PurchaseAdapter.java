@@ -41,6 +41,7 @@ public class PurchaseAdapter extends RecyclerView.Adapter<PurchaseAdapter.Purcha
             holder.tvItemName.setText(purchase.getItemName() != null ? purchase.getItemName() : "");
 
             holder.btnMenu.setOnClickListener(v -> {
+                SoundManager.getInstance(v.getContext()).playClick();
                 if (menuClickListener != null) {
                     menuClickListener.onItemMenuClick(purchase, v);
                 }

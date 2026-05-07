@@ -1,15 +1,24 @@
 package com.example.iwb303;
 
-import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
@@ -18,12 +27,33 @@ import java.util.Locale;
 
 public class StatisticsActivity extends AppCompatActivity {
 
-    private PieChart pieChart;
+    private static final String PREFS_NAME = "theme_prefs";
+    private static final String KEY_THEME = "selected_theme";
+    private HorizontalBarChart barChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // تطبيق الثيم المختار قبل onCreate
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        int theme = prefs.getInt(KEY_THEME, 0);
+        if (theme == 1) {
+            setTheme(R.style.Theme_IWB303_Accent);
+        } else {
+            setTheme(R.style.Theme_IWB303);
+        }
+
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_statistics);
+
+        View rootView = findViewById(R.id.statistics_root);
+        if (rootView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
 
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
@@ -33,7 +63,6 @@ public class StatisticsActivity extends AppCompatActivity {
         TextView tvPersonal = findViewById(R.id.tvStatPersonal);
         TextView tvBaby = findViewById(R.id.tvStatBaby);
         Button btnBack = findViewById(R.id.btnBack);
-        pieChart = findViewById(R.id.pieChart);
 
         double total = dbHelper.getTotalExpenses();
         double food = dbHelper.getTotalByCategory("Food");
@@ -47,38 +76,60 @@ public class StatisticsActivity extends AppCompatActivity {
         tvPersonal.setText(String.format(Locale.getDefault(), "%.2f SYP", personal));
         tvBaby.setText(String.format(Locale.getDefault(), "%.2f SYP", baby));
 
-        setupPieChart(food, cleaning, personal, baby);
+        barChart = findViewById(R.id.barChart);
+        setupBarChart(food, cleaning, personal, baby);
 
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
+            finish();
+        });
     }
 
-    private void setupPieChart(double food, double cleaning, double personal, double baby) {
-        List<PieEntry> entries = new ArrayList<>();
-        if (food > 0) entries.add(new PieEntry((float) food, "Food"));
-        if (cleaning > 0) entries.add(new PieEntry((float) cleaning, "Cleaning"));
-        if (personal > 0) entries.add(new PieEntry((float) personal, "Personal"));
-        if (baby > 0) entries.add(new PieEntry((float) baby, "Baby"));
+    private void setupBarChart(double food, double cleaning, double personal, double baby) {
+        List<BarEntry> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+
+        int index = 0;
+        if (food > 0) {
+            entries.add(new BarEntry(index++, (float) food));
+            labels.add("Food");
+        }
+        if (cleaning > 0) {
+            entries.add(new BarEntry(index++, (float) cleaning));
+            labels.add("Cleaning");
+        }
+        if (personal > 0) {
+            entries.add(new BarEntry(index++, (float) personal));
+            labels.add("Personal");
+        }
+        if (baby > 0) {
+            entries.add(new BarEntry(index++, (float) baby));
+            labels.add("Baby");
+        }
 
         if (entries.isEmpty()) {
-            pieChart.setNoDataText("No expenses recorded yet");
+            barChart.setNoDataText("No data to compare");
             return;
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Expenses by Category");
+        BarDataSet dataSet = new BarDataSet(entries, "Expenses by Category");
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-        dataSet.setValueTextColor(Color.BLACK);
-        dataSet.setValueTextSize(12f);
+        dataSet.setValueTextSize(10f);
 
-        PieData data = new PieData(dataSet);
-        pieChart.setData(data);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setDrawHoleEnabled(true);
-        pieChart.setHoleRadius(50f);
-        pieChart.setTransparentCircleRadius(55f);
-        pieChart.setCenterText("Expenses");
-        pieChart.setCenterTextSize(16f);
-        pieChart.setEntryLabelColor(Color.BLACK);
-        pieChart.animateY(1000);
-        pieChart.invalidate();
+        BarData data = new BarData(dataSet);
+        barChart.setData(data);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(labels.size());
+
+        barChart.getAxisLeft().setDrawGridLines(false);
+        barChart.getAxisRight().setEnabled(false);
+        barChart.getDescription().setEnabled(false);
+        barChart.animateY(1000);
+        barChart.invalidate();
     }
 }

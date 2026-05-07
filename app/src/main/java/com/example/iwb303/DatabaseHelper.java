@@ -36,14 +36,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
-        // 1. تحويل السنة من 2024 إلى 2026 لجميع السجلات
+        // تحديث التواريخ القديمة إذا وجدت
         db.execSQL("UPDATE " + TABLE_PURCHASES + 
                    " SET " + COL_PUR_DATE + " = REPLACE(" + COL_PUR_DATE + ", '2024', '2026')");
-        
-        // 2. تحويل الشهر من 05 إلى 04 مع استثناء التواريخ المحددة
-        db.execSQL("UPDATE " + TABLE_PURCHASES + 
-                   " SET " + COL_PUR_DATE + " = REPLACE(" + COL_PUR_DATE + ", '/05/', '/04/')" +
-                   " WHERE " + COL_PUR_DATE + " NOT IN ('06/05/2026', '01/05/2026')");
     }
 
     @Override
@@ -120,12 +115,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public List<Purchase> getPurchasesByCategory(String categoryName) {
-        return getPurchasesWithFilter("c.name = ?", new String[]{categoryName});
+        // البحث عن طريق اسم الفئة
+        return getPurchasesWithFilter("res_cat_name LIKE ?", new String[]{categoryName.trim()});
     }
 
     public List<Purchase> getPurchasesByDate(String date) {
-        // حماية اسم العمود بالأقواس لتجنب تعارضه مع الكلمات المحجوزة
-        return getPurchasesWithFilter("p.[" + COL_PUR_DATE + "] = ?", new String[]{date});
+        // البحث عن طريق التاريخ
+        return getPurchasesWithFilter("res_date LIKE ?", new String[]{date.trim()});
     }
 
     private List<Purchase> getPurchasesWithFilter(String selection, String[] selectionArgs) {
@@ -134,8 +130,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
         try {
             db = this.getReadableDatabase();
-            // استخدام أسماء مستعارة (AS) لكل الأعمدة لضمان عدم حدوث خطأ عند قراءة البيانات من Cursor
-            String query = "SELECT " +
+            
+            // استعلام أساسي يجمع البيانات من الجدولين مع أسماء مستعارة
+            String baseQuery = "SELECT " +
                     "p." + COL_PUR_ID + " AS res_id, " +
                     "p." + COL_PUR_ITEM_NAME + " AS res_name, " +
                     "p." + COL_PUR_CAT_ID + " AS res_cat_id, " +
@@ -147,12 +144,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     " FROM " + TABLE_PURCHASES + " p " +
                     " JOIN " + TABLE_CATEGORIES + " c ON p." + COL_PUR_CAT_ID + " = c." + COL_CAT_ID;
 
+            String finalQuery;
             if (selection != null) {
-                query += " WHERE " + selection;
+                // استخدام استعلام فرعي للفلترة بناءً على الأسماء المستعارة
+                finalQuery = "SELECT * FROM (" + baseQuery + ") WHERE " + selection;
+            } else {
+                finalQuery = baseQuery;
             }
-            query += " ORDER BY p." + COL_PUR_ID + " DESC";
 
-            cursor = db.rawQuery(query, selectionArgs);
+            // ترتيب تنازلي حسب التاريخ (الأحدث أولاً)
+            finalQuery += " ORDER BY SUBSTR(res_date, 7, 4) DESC, SUBSTR(res_date, 4, 2) DESC, SUBSTR(res_date, 1, 2) DESC";
+
+            android.util.Log.d("FilterDebug", "Final Query: " + finalQuery);
+            cursor = db.rawQuery(finalQuery, selectionArgs);
+            
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     list.add(new Purchase(
@@ -168,10 +173,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            android.util.Log.e("DatabaseHelper", "Error fetching purchases", e);
+            android.util.Log.e("DatabaseHelper", "Error in getPurchasesWithFilter", e);
         } finally {
             if (cursor != null) cursor.close();
-            // لا نغلق db هنا لأن getReadableDatabase قد يعيد نفس الكائن
         }
         return list;
     }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/statistics_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -89,14 +90,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Expenses Distribution"
+                        android:text="Expenses Comparison"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp"/>
 
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pieChart"
+                    <com.github.mikephil.charting.charts.HorizontalBarChart
+                        android:id="@+id/barChart"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp" />
+                        android:layout_height="300dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -129,25 +130,25 @@
                         android:stretchColumns="1">
 
                         <TableRow android:paddingVertical="8dp">
-                            <TextView android:text="🍔 Food" android:textSize="15sp"/>
+                            <TextView android:text="@string/category_food" android:textSize="15sp"/>
                             <TextView android:id="@+id/tvStatFood" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
                         </TableRow>
                         <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
 
                         <TableRow android:paddingVertical="8dp">
-                            <TextView android:text="🧼 Cleaning Supplies" android:textSize="15sp"/>
+                            <TextView android:text="@string/category_cleaning" android:textSize="15sp"/>
                             <TextView android:id="@+id/tvStatCleaning" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
                         </TableRow>
                         <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
 
                         <TableRow android:paddingVertical="8dp">
-                            <TextView android:text="🧴 Personal Care" android:textSize="15sp"/>
+                            <TextView android:text="@string/category_personal" android:textSize="15sp"/>
                             <TextView android:id="@+id/tvStatPersonal" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
                         </TableRow>
                         <View android:layout_height="1dp" android:background="?attr/colorOutlineVariant" />
 
                         <TableRow android:paddingVertical="8dp">
-                            <TextView android:text="👶 Baby Supplies" android:textSize="15sp"/>
+                            <TextView android:text="@string/category_baby" android:textSize="15sp"/>
                             <TextView android:id="@+id/tvStatBaby" android:gravity="end" android:text="0 SYP" android:textSize="15sp" android:textStyle="bold"/>
                         </TableRow>
                     </TableLayout>

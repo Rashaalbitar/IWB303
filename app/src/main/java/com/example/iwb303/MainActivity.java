@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         if (mainView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                // بالنسبة للشاشة الرئيسية، نترك الهوامش الجانبية والسفلية للـ FAB والبطاقات،
+                // ونضيف فقط Insets للنظام مع الحفاظ على التنسيق.
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                 return insets;
             });
@@ -71,17 +74,24 @@ public class MainActivity extends AppCompatActivity {
         loadData();
 
         // زر إضافة مشتريات
-        Button btnAdd = findViewById(R.id.btnAddPurchaseLabel);
+        View btnAdd = findViewById(R.id.btnAddPurchaseFab);
         btnAdd.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
             startActivity(intentWithTheme(AddPurchaseActivity.class));
         });
 
         // زر تغيير الثيم المباشر
-        findViewById(R.id.btnThemePicker).setOnClickListener(v -> showThemeMenu(v));
+        findViewById(R.id.btnThemePicker).setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
+            showThemeMenu(v);
+        });
 
         // زر القائمة الرئيسي (Menu)
         TextView btnMenu = findViewById(R.id.btnMenu);
-        btnMenu.setOnClickListener(v -> showMainMenu(v));
+        btnMenu.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
+            showMainMenu(v);
+        });
     }
 
     private Intent intentWithTheme(Class<?> cls) {
@@ -90,29 +100,37 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMainMenu(View v) {
         PopupMenu popup = new PopupMenu(this, v);
-        popup.getMenu().add(0, 1, 0, "Show all purchases");
-        popup.getMenu().add(0, 2, 1, "Show purchases by category");
-        popup.getMenu().add(0, 3, 2, "Show purchases by date");
-        popup.getMenu().add(0, 4, 3, "Statistics");
-        popup.getMenu().add(0, 5, 4, "Change Theme");
+        // استخدام معرفات واضحة بدلاً من الأرقام المجردة
+        final int MENU_ALL = 1;
+        final int MENU_CATEGORY = 2;
+        final int MENU_DATE = 3;
+        final int MENU_STATS = 4;
+        final int MENU_THEME = 5;
+
+        popup.getMenu().add(0, MENU_ALL, 0, "Show all purchases");
+        popup.getMenu().add(0, MENU_CATEGORY, 1, "Show purchases by category");
+        popup.getMenu().add(0, MENU_DATE, 2, "Show purchases by date");
+        popup.getMenu().add(0, MENU_STATS, 3, "Statistics");
+        popup.getMenu().add(0, MENU_THEME, 4, "Change Theme");
 
         popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1:
-                    loadData();
-                    return true;
-                case 2:
-                    showCategoryMenu(v);
-                    return true;
-                case 3:
-                    showDatePicker();
-                    return true;
-                case 4:
-                    startActivity(intentWithTheme(StatisticsActivity.class));
-                    return true;
-                case 5:
-                    showThemeMenu(v);
-                    return true;
+            SoundManager.getInstance(this).playClick();
+            int id = item.getItemId();
+            if (id == MENU_ALL) {
+                loadData();
+                return true;
+            } else if (id == MENU_CATEGORY) {
+                showCategoryMenu(v);
+                return true;
+            } else if (id == MENU_DATE) {
+                showDatePicker();
+                return true;
+            } else if (id == MENU_STATS) {
+                startActivity(intentWithTheme(StatisticsActivity.class));
+                return true;
+            } else if (id == MENU_THEME) {
+                showThemeMenu(v);
+                return true;
             }
             return false;
         });
@@ -120,19 +138,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showCategoryMenu(View v) {
+        if (dbHelper == null) dbHelper = new DatabaseHelper(this);
         PopupMenu popup = new PopupMenu(this, v);
-        popup.getMenu().add("Food");
-        popup.getMenu().add("Cleaning Supplies");
-        popup.getMenu().add("Personal Care");
-        popup.getMenu().add("Baby Supplies");
+        
+        // جلب الفئات الفعلية من قاعدة البيانات لضمان دقة الفلترة
+        List<String> categories = dbHelper.getAllCategoryNames();
+        if (categories.isEmpty()) {
+            Toast.makeText(this, "No categories found in database", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        for (String cat : categories) {
+            popup.getMenu().add(cat);
+        }
 
         popup.setOnMenuItemClickListener(item -> {
+            SoundManager.getInstance(this).playClick();
             try {
-                List<Purchase> filtered = dbHelper.getPurchasesByCategory(item.getTitle().toString());
+                String selectedCategory = item.getTitle().toString();
+                android.util.Log.d("FilterDebug", "Filtering by category: [" + selectedCategory + "]");
+                List<Purchase> filtered = dbHelper.getPurchasesByCategory(selectedCategory);
+                android.util.Log.d("FilterDebug", "Found: " + filtered.size() + " items");
+                
                 if (adapter != null) {
                     adapter.updateData(filtered);
+                    updateVisibility(filtered.isEmpty());
+                    if (filtered.isEmpty()) {
+                        Toast.makeText(this, "No purchases found for: " + selectedCategory, Toast.LENGTH_LONG).show();
+                    }
                 }
             } catch (Exception e) {
+                android.util.Log.e("FilterDebug", "Error filtering category", e);
                 Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
             return true;
@@ -149,15 +184,20 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
+            SoundManager.getInstance(this).playClick();
             try {
                 Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                 calendar.setTimeInMillis(selection);
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
                 String selectedDate = sdf.format(calendar.getTime());
+                android.util.Log.d("FilterDebug", "Filtering by date: [" + selectedDate + "]");
 
                 List<Purchase> filteredList = dbHelper.getPurchasesByDate(selectedDate);
+                android.util.Log.d("FilterDebug", "Found: " + filteredList.size() + " items");
+
                 if (adapter != null) {
                     adapter.updateData(filteredList);
+                    updateVisibility(filteredList.isEmpty());
                     if (filteredList.isEmpty()) {
                         Toast.makeText(MainActivity.this, "No purchases found for: " + selectedDate, Toast.LENGTH_SHORT).show();
                     }
@@ -173,6 +213,16 @@ public class MainActivity extends AppCompatActivity {
         datePicker.show(getSupportFragmentManager(), "FILTER_DATE_PICKER");
     }
 
+    private void updateVisibility(boolean isEmpty) {
+        if (isEmpty) {
+            recyclerView.setVisibility(View.GONE);
+            layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            layoutEmptyState.setVisibility(View.GONE);
+        }
+    }
+
     private void showThemeMenu(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         popup.getMenu().add(0, 0, 0, "Light Mode");
@@ -180,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
         popup.getMenu().add(0, 2, 2, "Accent Theme");
 
         popup.setOnMenuItemClickListener(item -> {
+            SoundManager.getInstance(this).playClick();
+            
             if (item.getItemId() == 0) {
                 saveTheme(0);
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -190,7 +242,9 @@ public class MainActivity extends AppCompatActivity {
                 saveTheme(1);
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
-            recreate();
+            
+            // تأخير بسيط لإعطاء فرصة لتشغيل الصوت قبل إعادة بناء الواجهة
+            v.postDelayed(this::recreate, 100);
             return true;
         });
         popup.show();
@@ -198,17 +252,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadData() {
         List<Purchase> list = dbHelper.getAllPurchases();
-        
-        if (list.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            layoutEmptyState.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            layoutEmptyState.setVisibility(View.GONE);
-        }
+        updateVisibility(list.isEmpty());
 
         if (adapter == null) {
             adapter = new PurchaseAdapter(list, (purchase, view) -> {
+                SoundManager.getInstance(this).playClick();
                 showActionMenu(purchase, view);
             });
             recyclerView.setAdapter(adapter);
@@ -223,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
         popup.getMenu().add(0, 2, 1, "Delete Purchase");
 
         popup.setOnMenuItemClickListener(item -> {
+            SoundManager.getInstance(this).playClick();
             if (item.getItemId() == 1) {
                 // تعديل
                 Intent intent = new Intent(MainActivity.this, AddPurchaseActivity.class);
@@ -257,6 +306,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadData();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // تحرير موارد الصوت عند إغلاق التطبيق لمنع تسريب الذاكرة
+        SoundManager.getInstance(this).release();
     }
 
     private void saveTheme(int theme) {

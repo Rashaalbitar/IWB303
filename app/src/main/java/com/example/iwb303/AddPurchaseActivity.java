@@ -3,14 +3,21 @@ package com.example.iwb303;
 import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.util.TypedValue;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.text.InputType;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
@@ -29,6 +36,7 @@ public class AddPurchaseActivity extends AppCompatActivity {
 
     private TextInputEditText etPrice, etQuantity, etDate;
     private AutoCompleteTextView etCategory, etItemName;
+    private TextView tvActivityTitle;
     private Button btnSave;
     private ImageButton btnClose;
     private DatabaseHelper dbHelper;
@@ -46,7 +54,18 @@ public class AddPurchaseActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_purchase);
+
+        View rootView = findViewById(R.id.add_purchase_root);
+        if (rootView != null) {
+            int padding16 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+            ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left + padding16, systemBars.top + padding16, systemBars.right + padding16, systemBars.bottom + padding16);
+                return insets;
+            });
+        }
 
         dbHelper = new DatabaseHelper(this);
 
@@ -55,6 +74,7 @@ public class AddPurchaseActivity extends AppCompatActivity {
         etPrice = findViewById(R.id.etPrice);
         etQuantity = findViewById(R.id.etQuantity);
         etDate = findViewById(R.id.etDate);
+        tvActivityTitle = findViewById(R.id.tvActivityTitle);
         btnSave = findViewById(R.id.btnSave);
         btnClose = findViewById(R.id.btnClose);
 
@@ -70,26 +90,41 @@ public class AddPurchaseActivity extends AppCompatActivity {
             etQuantity.setText(String.valueOf(getIntent().getIntExtra("QUANTITY", 0)));
             etDate.setText(getIntent().getStringExtra("DATE"));
             
-            btnSave.setText("Update Purchase");
+            tvActivityTitle.setText("Edit Purchase");
+            btnSave.setText(R.string.save);
             etItemName.setEnabled(true); // تفعيل حقل المادة عند التعديل
+        } else {
+            tvActivityTitle.setText("Add Purchase");
         }
 
         // إعداد قائمة المواد بناءً على الفئة المختارة
         etCategory.setOnItemClickListener((parent, view, position, id) -> {
+            SoundManager.getInstance(this).playClick();
             String selectedCategory = (String) parent.getItemAtPosition(position);
             updateItemDropdown(selectedCategory);
+        });
+
+        etItemName.setOnItemClickListener((parent, view, position, id) -> {
+            SoundManager.getInstance(this).playClick();
         });
 
         // برمجة حقل التاريخ ليظهر تقويم MaterialDatePicker
         etDate.setInputType(InputType.TYPE_NULL);
         etDate.setFocusable(false);
         etDate.setClickable(true);
-        etDate.setOnClickListener(v -> showMaterialDatePicker());
+        etDate.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
+            showMaterialDatePicker();
+        });
 
         // برمجة زر الإغلاق للعودة للصفحة الرئيسية
-        btnClose.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
+            finish();
+        });
 
         btnSave.setOnClickListener(v -> {
+            SoundManager.getInstance(this).playClick();
             String name = etItemName.getText().toString().trim();
             String categoryName = etCategory.getText().toString().trim();
             String priceStr = etPrice.getText().toString().trim();
@@ -162,6 +197,7 @@ public class AddPurchaseActivity extends AppCompatActivity {
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
+            SoundManager.getInstance(this).playClick();
             // تحويل التاريخ المختار إلى تنسيق DD/MM/YYYY
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             calendar.setTimeInMillis(selection);
