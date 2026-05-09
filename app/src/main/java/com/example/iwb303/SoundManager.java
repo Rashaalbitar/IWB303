@@ -5,11 +5,8 @@ import android.media.AudioAttributes;
 import android.media.SoundPool;
 
 /**
- * Class to manage sound effects in the application.
- * Requirements addressed:
- * 1. Use SoundPool or MediaPlayer.
- * 2. Place sound file in 'raw' folder.
- * 3. Prevent sound repetition or memory leaks.
+ * كلاس لإدارة المؤثرات الصوتية في التطبيق
+ * تم استخدام SoundPool لتشغيل الأصوات القصيرة عند النقر
  */
 public class SoundManager {
     private static SoundManager instance;
@@ -19,30 +16,28 @@ public class SoundManager {
     private int lastStreamId = 0;
 
     private SoundManager(Context context) {
-        // التحقق من إعدادات الصوت
+        // إعداد خصائص الصوت
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build();
 
-        // 1. استخدام SoundPool (مفضل للمؤثرات القصيرة)
+        // بناء SoundPool
         soundPool = new SoundPool.Builder()
                 .setMaxStreams(5)
                 .setAudioAttributes(audioAttributes)
                 .build();
 
+        // فحص اكتمال تحميل الصوت
         soundPool.setOnLoadCompleteListener((soundPool1, sampleId, status) -> {
-            if (status == 0) {
-                loaded = true;
-            }
+            if (status == 0) loaded = true;
         });
 
-        // 2. تحميل ملف الصوت من مجلد raw
-        // تم وضع الملف في res/raw/click.wav
+        // تحميل ملف الصوت من مجلد raw
         clickSoundId = soundPool.load(context.getApplicationContext(), R.raw.click, 1);
     }
 
-    // 3. منع تسريب الذاكرة باستخدام Singleton وسياق التطبيق (ApplicationContext)
+    // Singleton لضمان وجود نسخة واحدة فقط من مدير الأصوات وتجنب استهلاك الذاكرة
     public static synchronized SoundManager getInstance(Context context) {
         if (instance == null) {
             instance = new SoundManager(context);
@@ -50,18 +45,18 @@ public class SoundManager {
         return instance;
     }
 
+    // تشغيل صوت النقرة
     public void playClick() {
-        if (loaded) {
-            // منع تكرار الصوت (إيقاف الصوت السابق إذا كان قيد التشغيل)
+        if (loaded && soundPool != null) {
+            // إيقاف الصوت السابق قبل تشغيل الجديد لمنع التكرار المزعج
             if (lastStreamId != 0) {
                 soundPool.stop(lastStreamId);
             }
-            // تشغيل الصوت مرة واحدة (loop = 0)
             lastStreamId = soundPool.play(clickSoundId, 1.0f, 1.0f, 1, 0, 1.0f);
         }
     }
 
-    //  منع تسريب الذاكرة
+    // تحرير الموارد عند إغلاق التطبيق لمنع تسريب الذاكرة
     public void release() {
         if (soundPool != null) {
             soundPool.release();

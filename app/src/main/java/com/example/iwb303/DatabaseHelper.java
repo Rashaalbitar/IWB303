@@ -9,18 +9,21 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+//   استخدام SQLiteOpenHelper لإنشاء الجداول وإدارتها
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "PurchasesDB";
     private static final int DATABASE_VERSION = 1;
 
+    // أسماء الجداول
     public static final String TABLE_CATEGORIES = "categories";
     public static final String TABLE_PURCHASES = "purchases";
 
+    // أعمدة جدول الفئات
     public static final String COL_CAT_ID = "id";
     public static final String COL_CAT_NAME = "name";
-    public static final String COL_CAT_DESC = "description";
 
+    // أعمدة جدول المشتريات
     public static final String COL_PUR_ID = "id";
     public static final String COL_PUR_ITEM_NAME = "item_name";
     public static final String COL_PUR_CAT_ID = "category_id";
@@ -34,20 +37,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        // تحديث التواريخ القديمة إذا وجدت
-        db.execSQL("UPDATE " + TABLE_PURCHASES + 
-                   " SET " + COL_PUR_DATE + " = REPLACE(" + COL_PUR_DATE + ", '2024', '2026')");
-    }
-
-    @Override
     public void onCreate(SQLiteDatabase db) {
+        // إنشاء جدول الفئات
         db.execSQL("CREATE TABLE " + TABLE_CATEGORIES + " (" +
                 COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_CAT_NAME + " TEXT NOT NULL, " +
-                COL_CAT_DESC + " TEXT)");
+                COL_CAT_NAME + " TEXT NOT NULL)");
 
+        // إنشاء جدول المشتريات مع الربط بجدول الفئات
         db.execSQL("CREATE TABLE " + TABLE_PURCHASES + " (" +
                 COL_PUR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_PUR_ITEM_NAME + " TEXT NOT NULL, " +
@@ -57,50 +53,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_PUR_TOTAL_COST + " REAL, " +
                 COL_PUR_DATE + " TEXT)");
 
+        // إدخال بيانات أولية
         insertInitialData(db);
     }
 
     private void insertInitialData(SQLiteDatabase db) {
-        long foodId = insertCategory(db, "Food", "Nutrition");
-        long cleaningId = insertCategory(db, "Cleaning Supplies", "Household cleaning");
-        long personalId = insertCategory(db, "Personal Care", "Hygiene");
-        long babyId = insertCategory(db, "Baby Supplies", "Baby products");
+        long foodId = insertCategory(db, "Food");
+        long cleaningId = insertCategory(db, "Cleaning Supplies");
+        long personalId = insertCategory(db, "Personal Care");
+        long babyId = insertCategory(db, "Baby Supplies");
 
         insertPurchase(db, "Tomatoes", foodId, 500, 2, "20/04/2026");
-        insertPurchase(db, "Potatoes", foodId, 400, 3, "20/04/2026");
         insertPurchase(db, "Eggs", foodId, 1500, 1, "20/04/2026");
         insertPurchase(db, "Milk", foodId, 1200, 2, "21/04/2026");
-        insertPurchase(db, "Sugar", foodId, 800, 5, "21/04/2026");
-        insertPurchase(db, "White Rice", foodId, 1000, 4, "21/04/2026");
         insertPurchase(db, "Floor Cleaner", cleaningId, 2500, 1, "22/04/2026");
-        insertPurchase(db, "Dishwashing Liquid", cleaningId, 1800, 1, "22/04/2026");
-        insertPurchase(db, "Glass Cleaner", cleaningId, 1500, 1, "22/04/2026");
         insertPurchase(db, "Shampoo", personalId, 3500, 1, "23/04/2026");
-        insertPurchase(db, "Body Wash", personalId, 3000, 1, "23/04/2026");
-        insertPurchase(db, "Soap", personalId, 500, 4, "23/04/2026");
-        insertPurchase(db, "Hand Cream", personalId, 2000, 1, "24/04/2026");
-        insertPurchase(db, "Baby Shampoo", babyId, 4000, 1, "24/04/2026");
         insertPurchase(db, "Baby Powder", babyId, 2500, 1, "25/04/2026");
-        insertPurchase(db, "Baby Lotion", babyId, 4500, 1, "25/04/2026");
-        insertPurchase(db, "Baby Wipes", babyId, 1200, 2, "25/04/2026");
     }
 
-    private long insertCategory(SQLiteDatabase db, String name, String desc) {
-        ContentValues v = new ContentValues();
-        v.put(COL_CAT_NAME, name);
-        v.put(COL_CAT_DESC, desc);
-        return db.insert(TABLE_CATEGORIES, null, v);
+    private long insertCategory(SQLiteDatabase db, String name) {
+        ContentValues values = new ContentValues();
+        values.put(COL_CAT_NAME, name);
+        return db.insert(TABLE_CATEGORIES, null, values);
     }
 
     private void insertPurchase(SQLiteDatabase db, String name, long catId, double price, int qty, String date) {
-        ContentValues v = new ContentValues();
-        v.put(COL_PUR_ITEM_NAME, name);
-        v.put(COL_PUR_CAT_ID, catId);
-        v.put(COL_PUR_PRICE, price);
-        v.put(COL_PUR_QUANTITY, qty);
-        v.put(COL_PUR_TOTAL_COST, price * qty);
-        v.put(COL_PUR_DATE, date);
-        db.insert(TABLE_PURCHASES, null, v);
+        ContentValues values = new ContentValues();
+        values.put(COL_PUR_ITEM_NAME, name);
+        values.put(COL_PUR_CAT_ID, catId);
+        values.put(COL_PUR_PRICE, price);
+        values.put(COL_PUR_QUANTITY, qty);
+        values.put(COL_PUR_TOTAL_COST, price * qty);
+        values.put(COL_PUR_DATE, date);
+        db.insert(TABLE_PURCHASES, null, values);
     }
 
     @Override
@@ -110,95 +95,63 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    // ميثود لجلب كل المشتريات
     public List<Purchase> getAllPurchases() {
         return getPurchasesWithFilter(null, null);
     }
 
+    // ميثود للفلترة حسب الفئة
     public List<Purchase> getPurchasesByCategory(String categoryName) {
-        // البحث عن طريق اسم الفئة
-        return getPurchasesWithFilter("res_cat_name LIKE ?", new String[]{categoryName.trim()});
+        // نستخدم c.name للبحث في جدول الفئات المربوط
+        return getPurchasesWithFilter("c." + COL_CAT_NAME + " = ?", new String[]{categoryName});
     }
 
+    // ميثود للفلترة حسب التاريخ
     public List<Purchase> getPurchasesByDate(String date) {
-        // البحث عن طريق التاريخ
-        return getPurchasesWithFilter("res_date LIKE ?", new String[]{date.trim()});
+        return getPurchasesWithFilter("p." + COL_PUR_DATE + " = ?", new String[]{date});
     }
 
+    // ميثود عامة للبحث والترتيب
     private List<Purchase> getPurchasesWithFilter(String selection, String[] selectionArgs) {
         List<Purchase> list = new ArrayList<>();
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-        try {
-            db = this.getReadableDatabase();
-            
-            // استعلام أساسي يجمع البيانات من الجدولين مع أسماء مستعارة
-            String baseQuery = "SELECT " +
-                    "p." + COL_PUR_ID + " AS res_id, " +
-                    "p." + COL_PUR_ITEM_NAME + " AS res_name, " +
-                    "p." + COL_PUR_CAT_ID + " AS res_cat_id, " +
-                    "p." + COL_PUR_PRICE + " AS res_price, " +
-                    "p." + COL_PUR_QUANTITY + " AS res_qty, " +
-                    "p." + COL_PUR_TOTAL_COST + " AS res_total, " +
-                    "p." + COL_PUR_DATE + " AS res_date, " +
-                    "c." + COL_CAT_NAME + " AS res_cat_name" +
-                    " FROM " + TABLE_PURCHASES + " p " +
-                    " JOIN " + TABLE_CATEGORIES + " c ON p." + COL_PUR_CAT_ID + " = c." + COL_CAT_ID;
+        SQLiteDatabase db = this.getReadableDatabase();
 
-            String finalQuery;
-            if (selection != null) {
-                // استخدام استعلام فرعي للفلترة بناءً على الأسماء المستعارة
-                finalQuery = "SELECT * FROM (" + baseQuery + ") WHERE " + selection;
-            } else {
-                finalQuery = baseQuery;
-            }
+        // استعلام لربط جدول المشتريات مع جدول الفئات
+        String query = "SELECT p.*, c." + COL_CAT_NAME + 
+                      " FROM " + TABLE_PURCHASES + " p " +
+                      " JOIN " + TABLE_CATEGORIES + " c ON p." + COL_PUR_CAT_ID + " = c." + COL_CAT_ID;
 
-            // ترتيب تنازلي حسب التاريخ (الأحدث أولاً)
-            finalQuery += " ORDER BY SUBSTR(res_date, 7, 4) DESC, SUBSTR(res_date, 4, 2) DESC, SUBSTR(res_date, 1, 2) DESC";
+        if (selection != null) {
+            query += " WHERE " + selection;
+        }
 
-            android.util.Log.d("FilterDebug", "Final Query: " + finalQuery);
-            cursor = db.rawQuery(finalQuery, selectionArgs);
-            
-            if (cursor != null && cursor.moveToFirst()) {
-                do {
-                    list.add(new Purchase(
-                            cursor.getInt(cursor.getColumnIndexOrThrow("res_id")),
-                            cursor.getString(cursor.getColumnIndexOrThrow("res_name")),
-                            cursor.getInt(cursor.getColumnIndexOrThrow("res_cat_id")),
-                            cursor.getString(cursor.getColumnIndexOrThrow("res_cat_name")),
-                            cursor.getDouble(cursor.getColumnIndexOrThrow("res_price")),
-                            cursor.getInt(cursor.getColumnIndexOrThrow("res_qty")),
-                            cursor.getDouble(cursor.getColumnIndexOrThrow("res_total")),
-                            cursor.getString(cursor.getColumnIndexOrThrow("res_date"))
-                    ));
-                } while (cursor.moveToNext());
-            }
-        } catch (Exception e) {
-            android.util.Log.e("DatabaseHelper", "Error in getPurchasesWithFilter", e);
-        } finally {
-            if (cursor != null) cursor.close();
+        // الترتيب التنازلي حسب التاريخ (الأحدث أولا)
+        query += " ORDER BY SUBSTR(p." + COL_PUR_DATE + ", 7, 4) DESC, " +
+                 "SUBSTR(p." + COL_PUR_DATE + ", 4, 2) DESC, " +
+                 "SUBSTR(p." + COL_PUR_DATE + ", 1, 2) DESC";
+
+        Cursor cursor = db.rawQuery(query, selectionArgs);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                // استخراج البيانات من الكرسر
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PUR_ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COL_PUR_ITEM_NAME));
+                int catId = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PUR_CAT_ID));
+                String catName = cursor.getString(cursor.getColumnIndexOrThrow(COL_CAT_NAME));
+                double price = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PUR_PRICE));
+                int qty = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PUR_QUANTITY));
+                double total = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PUR_TOTAL_COST));
+                String pDate = cursor.getString(cursor.getColumnIndexOrThrow(COL_PUR_DATE));
+
+                list.add(new Purchase(id, name, catId, catName, price, qty, total, pDate));
+            } while (cursor.moveToNext());
+            cursor.close();
         }
         return list;
     }
 
-    public double getTotalExpenses() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(total_cost) FROM purchases", null);
-        double total = 0;
-        if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close();
-        return total;
-    }
-
-    public double getTotalByCategory(String categoryName) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT SUM(p.total_cost) FROM purchases p JOIN categories c ON p.category_id = c.id WHERE c.name = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{categoryName});
-        double total = 0;
-        if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close();
-        return total;
-    }
-
+    // ميثود لإضافة طلب شراء جديد
     public long addPurchase(Purchase p) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -211,6 +164,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_PURCHASES, null, v);
     }
 
+    // ميثود لحذف طلب شراء
+    public void deletePurchase(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_PURCHASES, COL_PUR_ID + " = ?", new String[]{String.valueOf(id)});
+    }
+
+    // ميثود لتعديل طلب شراء
     public int updatePurchase(Purchase p) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -223,11 +183,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TABLE_PURCHASES, v, COL_PUR_ID + " = ?", new String[]{String.valueOf(p.getId())});
     }
 
-    public void deletePurchase(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_PURCHASES, COL_PUR_ID + " = ?", new String[]{String.valueOf(id)});
-    }
-
+    // ميثود لجلب كل أسماء الفئات لتعبئة القوائم
     public List<String> getAllCategoryNames() {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -236,11 +192,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 list.add(cursor.getString(0));
             } while (cursor.moveToNext());
+            cursor.close();
         }
-        cursor.close();
         return list;
     }
 
+    // جلب المعرف للفئة أو إنشاؤه إذا لم يوجد (لشاشة الإضافة)
+    public int getOrCreateCategoryId(String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_ID}, COL_CAT_NAME + "=?", new String[]{name}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
+        }
+        ContentValues v = new ContentValues();
+        v.put(COL_CAT_NAME, name);
+        return (int) db.insert(TABLE_CATEGORIES, null, v);
+    }
+
+    // ميثود مخصصة لجلب أسماء المواد بناء على الفئة (للتكملة التلقائية)
     public List<String> getItemsByCategory(String categoryName) {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -253,23 +224,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 list.add(cursor.getString(0));
             } while (cursor.moveToNext());
+            cursor.close();
         }
-        cursor.close();
         return list;
     }
 
-    public int getOrCreateCategoryId(String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_ID}, COL_CAT_NAME + "=?", new String[]{name}, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(0);
-            cursor.close();
-            return id;
-        }
-        if (cursor != null) cursor.close();
+    // حساب إجمالي المصاريف للشاشة الإحصائية
+    public double getTotalExpenses() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT SUM(" + COL_PUR_TOTAL_COST + ") FROM " + TABLE_PURCHASES, null);
+        double total = 0;
+        if (cursor.moveToFirst()) total = cursor.getDouble(0);
+        cursor.close();
+        return total;
+    }
 
-        ContentValues v = new ContentValues();
-        v.put(COL_CAT_NAME, name);
-        return (int) db.insert(TABLE_CATEGORIES, null, v);
+    // حساب الإجمالي حسب الفئة
+    public double getTotalByCategory(String categoryName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT SUM(p." + COL_PUR_TOTAL_COST + ") FROM " + TABLE_PURCHASES + 
+                      " p JOIN " + TABLE_CATEGORIES + " c ON p." + COL_PUR_CAT_ID + " = c." + COL_CAT_ID + 
+                      " WHERE c." + COL_CAT_NAME + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{categoryName});
+        double total = 0;
+        if (cursor.moveToFirst()) total = cursor.getDouble(0);
+        cursor.close();
+        return total;
     }
 }

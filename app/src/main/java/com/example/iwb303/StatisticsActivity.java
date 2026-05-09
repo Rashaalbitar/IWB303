@@ -89,6 +89,7 @@ public class StatisticsActivity extends AppCompatActivity {
         List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
+        // إضافة البيانات للرسم البياني فقط للفئات التي تحتوي مصاريف
         int index = 0;
         if (food > 0) {
             entries.add(new BarEntry(index++, (float) food));

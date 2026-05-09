@@ -1,6 +1,5 @@
 package com.example.iwb303;
 
-import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -24,7 +23,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -97,7 +95,7 @@ public class AddPurchaseActivity extends AppCompatActivity {
             tvActivityTitle.setText("Add Purchase");
         }
 
-        // إعداد قائمة المواد بناءً على الفئة المختارة
+        // إعداد قائمة المواد بناء على الفئة المختارة
         etCategory.setOnItemClickListener((parent, view, position, id) -> {
             SoundManager.getInstance(this).playClick();
             String selectedCategory = (String) parent.getItemAtPosition(position);
