@@ -9,11 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-//   استخدام SQLiteOpenHelper لإنشاء الجداول وإدارتها
+/**
+ * كلاس المساعدة لقاعدة البيانات - مشروع إدارة المشتريات
+ * قمت باستخدام SQLiteOpenHelper لإنشاء الجداول وإدارتها
+ */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "PurchasesDB";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // تم رفع الإصدار لتحديث البيانات
 
     // أسماء الجداول
     public static final String TABLE_CATEGORIES = "categories";
@@ -53,7 +56,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_PUR_TOTAL_COST + " REAL, " +
                 COL_PUR_DATE + " TEXT)");
 
-        // إدخال بيانات أولية
+        // إدخال بيانات أولية كما طلب الدكتور
         insertInitialData(db);
     }
 
@@ -63,12 +66,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long personalId = insertCategory(db, "Personal Care");
         long babyId = insertCategory(db, "Baby Supplies");
 
+        // إدخال قائمة كاملة من المواد التجريبية
         insertPurchase(db, "Tomatoes", foodId, 500, 2, "20/04/2026");
+        insertPurchase(db, "Potatoes", foodId, 400, 3, "20/04/2026");
         insertPurchase(db, "Eggs", foodId, 1500, 1, "20/04/2026");
         insertPurchase(db, "Milk", foodId, 1200, 2, "21/04/2026");
+        insertPurchase(db, "Sugar", foodId, 800, 5, "21/04/2026");
+        insertPurchase(db, "White Rice", foodId, 1000, 4, "21/04/2026");
+        
         insertPurchase(db, "Floor Cleaner", cleaningId, 2500, 1, "22/04/2026");
+        insertPurchase(db, "Dishwashing Liquid", cleaningId, 1800, 1, "22/04/2026");
+        insertPurchase(db, "Glass Cleaner", cleaningId, 1500, 1, "22/04/2026");
+        
         insertPurchase(db, "Shampoo", personalId, 3500, 1, "23/04/2026");
+        insertPurchase(db, "Body Wash", personalId, 3000, 1, "23/04/2026");
+        insertPurchase(db, "Soap", personalId, 500, 4, "23/04/2026");
+        insertPurchase(db, "Hand Cream", personalId, 2000, 1, "24/04/2026");
+        
+        insertPurchase(db, "Baby Shampoo", babyId, 4000, 1, "24/04/2026");
         insertPurchase(db, "Baby Powder", babyId, 2500, 1, "25/04/2026");
+        insertPurchase(db, "Baby Lotion", babyId, 4500, 1, "25/04/2026");
+        insertPurchase(db, "Baby Wipes", babyId, 1200, 2, "25/04/2026");
     }
 
     private long insertCategory(SQLiteDatabase db, String name) {
@@ -90,6 +108,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // عند تغيير الإصدار، يتم حذف الجداول وإعادة بنائها بالبيانات الجديدة
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PURCHASES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
         onCreate(db);
@@ -102,7 +121,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ميثود للفلترة حسب الفئة
     public List<Purchase> getPurchasesByCategory(String categoryName) {
-        // نستخدم c.name للبحث في جدول الفئات المربوط
         return getPurchasesWithFilter("c." + COL_CAT_NAME + " = ?", new String[]{categoryName});
     }
 
@@ -116,7 +134,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<Purchase> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // استعلام لربط جدول المشتريات مع جدول الفئات
         String query = "SELECT p.*, c." + COL_CAT_NAME + 
                       " FROM " + TABLE_PURCHASES + " p " +
                       " JOIN " + TABLE_CATEGORIES + " c ON p." + COL_PUR_CAT_ID + " = c." + COL_CAT_ID;
@@ -125,7 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             query += " WHERE " + selection;
         }
 
-        // الترتيب التنازلي حسب التاريخ (الأحدث أولا)
+        // الترتيب التنازلي حسب التاريخ (الأحدث أولاً)
         query += " ORDER BY SUBSTR(p." + COL_PUR_DATE + ", 7, 4) DESC, " +
                  "SUBSTR(p." + COL_PUR_DATE + ", 4, 2) DESC, " +
                  "SUBSTR(p." + COL_PUR_DATE + ", 1, 2) DESC";
@@ -134,7 +151,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                // استخراج البيانات من الكرسر
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PUR_ID));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(COL_PUR_ITEM_NAME));
                 int catId = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PUR_CAT_ID));
@@ -151,7 +167,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    // ميثود لإضافة طلب شراء جديد
     public long addPurchase(Purchase p) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -164,13 +179,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_PURCHASES, null, v);
     }
 
-    // ميثود لحذف طلب شراء
     public void deletePurchase(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_PURCHASES, COL_PUR_ID + " = ?", new String[]{String.valueOf(id)});
     }
 
-    // ميثود لتعديل طلب شراء
     public int updatePurchase(Purchase p) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -183,7 +196,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TABLE_PURCHASES, v, COL_PUR_ID + " = ?", new String[]{String.valueOf(p.getId())});
     }
 
-    // ميثود لجلب كل أسماء الفئات لتعبئة القوائم
     public List<String> getAllCategoryNames() {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -197,7 +209,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    // جلب المعرف للفئة أو إنشاؤه إذا لم يوجد (لشاشة الإضافة)
     public int getOrCreateCategoryId(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_ID}, COL_CAT_NAME + "=?", new String[]{name}, null, null, null);
@@ -211,7 +222,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return (int) db.insert(TABLE_CATEGORIES, null, v);
     }
 
-    // ميثود مخصصة لجلب أسماء المواد بناء على الفئة (للتكملة التلقائية)
     public List<String> getItemsByCategory(String categoryName) {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -229,7 +239,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    // حساب إجمالي المصاريف للشاشة الإحصائية
     public double getTotalExpenses() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT SUM(" + COL_PUR_TOTAL_COST + ") FROM " + TABLE_PURCHASES, null);
@@ -239,7 +248,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
-    // حساب الإجمالي حسب الفئة
     public double getTotalByCategory(String categoryName) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT SUM(p." + COL_PUR_TOTAL_COST + ") FROM " + TABLE_PURCHASES + 
